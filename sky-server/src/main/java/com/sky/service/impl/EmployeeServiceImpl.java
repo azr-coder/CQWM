@@ -70,17 +70,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 
     /**
-     *新增员工
+     * 新增员工
      */
 
     @Override
     public void save(EmployeeDTO employeeDTO) {
 
         //将DTO数据封装到实体类中
-        Employee employee=new Employee();
+        Employee employee = new Employee();
 
         //使用工具类拷贝相同属性名
-        BeanUtils.copyProperties(employeeDTO,employee);
+        BeanUtils.copyProperties(employeeDTO, employee);
 
         //设置其他属性 软编码方便后期维护
         employee.setStatus(StatusConstant.ENABLE);
@@ -98,11 +98,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeMapper.save(employee);
 
 
-
     }
 
     /**
      * 分页查询
+     *
      * @param employeePageQueryDTO
      * @return
      */
@@ -111,16 +111,65 @@ public class EmployeeServiceImpl implements EmployeeService {
     public PageResult pageQuery(EmployeePageQueryDTO employeePageQueryDTO) {
 
         //利用pageHelper设置查询页码等
-        PageHelper.startPage(employeePageQueryDTO.getPage(),employeePageQueryDTO.getPageSize());
+        PageHelper.startPage(employeePageQueryDTO.getPage(), employeePageQueryDTO.getPageSize());
 
-        Page<Employee> page=  employeeMapper.pageQuery(employeePageQueryDTO);
+        Page<Employee> page = employeeMapper.pageQuery(employeePageQueryDTO);
 
 
         long total = page.getTotal();//总页数
         List<Employee> result = page.getResult();//查询结果
 
-        return new PageResult(total,result);
+        return new PageResult(total, result);
 
 
+    }
+
+    /**
+     * 启用禁用员工账号
+     *
+     * @param status
+     * @param id
+     */
+    @Override
+    public void startorend(Integer status, long id) {
+        //将属性封装为实体类 进行动态sql查询
+//        Employee employee = new Employee();
+//        employee.setStatus(status);
+//        employee.setId(id);
+
+        Employee employee = Employee.builder()
+                .status(status)
+                .id(id).build();
+
+        employeeMapper.update(employee);
+
+
+
+    }
+    /**
+     * 根据id查询员工
+     *
+     */
+
+    @Override
+    public Employee getById(long id) {
+        Employee employee=employeeMapper.getById(id);
+        //掩盖密码
+        employee.setPassword("*****");
+        return employee;
+
+    }
+
+    @Override
+    public void update(EmployeeDTO employeeDTO) {
+        Employee employee=new Employee();
+        BeanUtils.copyProperties(employeeDTO, employee);
+
+
+
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser(BaseContext.getCurrentId());
+
+        employeeMapper.update(employee);
     }
 }
